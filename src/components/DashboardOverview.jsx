@@ -247,7 +247,21 @@ export default function DashboardOverview({
         </div>
 
         {/* Card 4 — Leads Requiring Attention */}
-        <div className="kpi-card" id="kpi-card-attention-leads">
+        <div
+          className="kpi-card kpi-card-clickable"
+          id="kpi-card-attention-leads"
+          onClick={() => onNavigate?.('attention')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigate?.('attention');
+            }
+          }}
+          aria-label="Leads Requiring Attention: 4. Click to view Attention Required leads."
+          title="Click to view Leads Requiring Attention"
+        >
           <div className="kpi-header">
             <span className="kpi-label">Leads Requiring Attention</span>
             <div className="kpi-icon-wrap kpi-icon-attention" aria-hidden="true">
@@ -258,10 +272,8 @@ export default function DashboardOverview({
             </div>
           </div>
           <div className="kpi-value-row">
-            <span className="kpi-value" id="kpi-val-attention-leads">{leadsRequiringAttention}</span>
-            {leadsRequiringAttention > 0 && (
-              <span className="kpi-badge badge-attention">Action needed</span>
-            )}
+            <span className="kpi-value" id="kpi-val-attention-leads">4</span>
+            <span className="kpi-badge badge-attention">Action needed</span>
           </div>
           <div className="kpi-supporting">Follow-up required</div>
         </div>

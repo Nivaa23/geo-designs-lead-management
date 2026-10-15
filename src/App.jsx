@@ -4,6 +4,7 @@ import TopBar from './components/TopBar';
 import LoginScreen from './components/LoginScreen';
 import ForgotPasswordScreen from './components/ForgotPasswordScreen';
 import DashboardOverview from './components/DashboardOverview';
+import AttentionRequiredScreen from './components/AttentionRequiredScreen';
 import LeadForm from './components/LeadForm';
 import LeadsTable from './components/LeadsTable';
 import EditLeadModal from './components/EditLeadModal';
@@ -292,6 +293,14 @@ export default function App() {
                 onEdit={handleOpenEdit}
                 onDelete={handleOpenDelete}
                 tableAlert={tableAlert}
+              />
+            )}
+            {activeScreen === 'attention' && (
+              <AttentionRequiredScreen
+                leads={leads}
+                isLoading={isLoading}
+                onNavigate={handleSelectScreen}
+                onViewLead={(lead) => setViewingLead(lead)}
               />
             )}
             {activeScreen === 'settings' && (
