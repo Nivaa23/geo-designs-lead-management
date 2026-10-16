@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   PERSON_DESIGNATION_MAP,
-  CONCERN_PERSON_OPTIONS,
   SOURCE_OF_INQUIRY_OPTIONS,
   HURDLES_OPTIONS,
   normalizeConcernPerson
@@ -49,7 +48,7 @@ export default function EditLeadModal({ lead, onSave, onClose }) {
 
   useEffect(() => {
     if (lead) {
-      const normalizedAllotted = normalizeConcernPerson(lead.allottedTo || lead.concernPerson);
+      const currentAllotted = lead.allottedTo || normalizeConcernPerson(lead.concernPerson) || '';
       setFormData({
         tenderId: lead.tenderId || '',
         nameOfWorkEmplement: lead.nameOfWorkEmplement || '',
@@ -63,7 +62,7 @@ export default function EditLeadModal({ lead, onSave, onClose }) {
         clientConcernPersonDesignationExternal: lead.clientConcernPersonDesignationExternal || '',
         sourceOfInquiry: lead.sourceOfInquiry || '',
         referenceBy: lead.referenceBy || '',
-        allottedTo: normalizedAllotted || '',
+        allottedTo: currentAllotted,
         hurdlesSpecificTask: lead.hurdlesSpecificTask || '',
         remarks: lead.remarks || ''
       });
@@ -187,11 +186,11 @@ export default function EditLeadModal({ lead, onSave, onClose }) {
       clientConcernPersonDesignationExternal: formData.clientConcernPersonDesignationExternal.trim(),
       sourceOfInquiry: formData.sourceOfInquiry,
       referenceBy: formData.referenceBy.trim(),
-      allottedTo: formData.allottedTo,
+      allottedTo: formData.allottedTo.trim(),
       // Backward compatible fields
-      concernPerson: formData.allottedTo || lead.concernPerson || 'Vishal Shah',
+      concernPerson: formData.allottedTo.trim() || lead.concernPerson || '',
       contactDetails: formData.clientContact.trim() || lead.contactDetails || 'N/A',
-      designationOfConcernPerson: PERSON_DESIGNATION_MAP[formData.allottedTo] || lead.designationOfConcernPerson || 'COO',
+      designationOfConcernPerson: PERSON_DESIGNATION_MAP[formData.allottedTo.trim()] || lead.designationOfConcernPerson || '',
       hurdlesSpecificTask: formData.hurdlesSpecificTask,
       remarks: formData.remarks.trim(),
       isNew: false
@@ -522,21 +521,17 @@ export default function EditLeadModal({ lead, onSave, onClose }) {
                 {/* Allotted To */}
                 <div className="form-group full-width">
                   <label htmlFor="edit-allottedTo" className="form-label">Allotted To</label>
-                  <select
+                  <input
+                    type="text"
                     ref={fieldRefs.allottedTo}
                     id="edit-allottedTo"
                     name="allottedTo"
-                    className="form-select"
+                    className="form-input"
+                    placeholder="Enter employee name"
                     value={formData.allottedTo}
                     onChange={handleChange}
-                  >
-                    <option value="">Select internal personnel (Optional)</option>
-                    {CONCERN_PERSON_OPTIONS.map((person) => (
-                      <option key={person} value={person}>
-                        {person} — {PERSON_DESIGNATION_MAP[person]}
-                      </option>
-                    ))}
-                  </select>
+                  />
+                  <span className="field-hint">Internal team member assigned to handle this lead</span>
                 </div>
               </div>
             </div>

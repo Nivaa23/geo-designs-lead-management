@@ -8,7 +8,7 @@ const ITEMS_PER_PAGE = 10;
 const FILTERABLE_COLUMNS = {
   concernPerson: {
     label: 'Concern Person',
-    getValue: (lead) => normalizeConcernPerson(lead.allottedTo || lead.concernPerson) || '(Blank)'
+    getValue: (lead) => lead.allottedTo || normalizeConcernPerson(lead.concernPerson) || '(Blank)'
   },
   sourceOfInquiry: {
     label: 'Source of Inquiry',
@@ -556,7 +556,7 @@ export default function LeadsTable({
                     <td><strong>{lead.nameOfWorkEmplement}</strong></td>
                     <td>{lead.nameOfClient}</td>
                     <td>{lead.location}</td>
-                    <td>{normalizeConcernPerson(lead.concernPerson)}</td>
+                    <td>{lead.allottedTo || normalizeConcernPerson(lead.concernPerson) || '—'}</td>
                     <td>{lead.contactDetails}</td>
                     <td>
                       <span className="badge badge-designation">

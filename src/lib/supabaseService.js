@@ -27,6 +27,7 @@ import { normalizeConcernPerson } from '../data/mockLeads';
  */
 export function mapSupabaseToLead(row) {
   if (!row) return null;
+  const allotted = row.allotted_to || normalizeConcernPerson(row.concern_person) || '';
   return {
     id: row.id,
     srNo: Number(row.sr_no),
@@ -38,12 +39,12 @@ export function mapSupabaseToLead(row) {
     clientContact: row.client_contact || '',
     clientConcernedPersonExternal: row.client_concerned_person_external || '',
     clientConcernPersonDesignationExternal: row.client_concern_person_designation_external || '',
-    concernPerson: normalizeConcernPerson(row.concern_person) || '',
+    concernPerson: allotted,
     contactDetails: row.contact_details || '',
     designationOfConcernPerson: row.designation || '',
     sourceOfInquiry: row.source_of_inquiry || '',
     referenceBy: row.reference_by || '',
-    allottedTo: row.allotted_to || '',
+    allottedTo: allotted,
     durationOfWork: row.duration_of_work || '',
     hurdlesSpecificTask: row.hurdles_specific_task || '',
     approximateAmount: row.approximate_amount || '',
@@ -54,26 +55,36 @@ export function mapSupabaseToLead(row) {
 
 /**
  * Maps frontend lead form fields to the public.leads database columns.
- * Formats concern_person as expected by database constraints:
- * - leads_concern_person_check (requires 'Name - Designation')
- * - valid_concern_person_designation (requires matching designation)
- * Maps allottedTo, clientContact, and other new fields cleanly.
+ * Safely stores manual allotted_to text value in public.leads.allotted_to.
+ * Conditionally populates legacy concern_person/designation columns only when
+ * matching legacy check constraints to avoid database constraint violations.
  */
 export function mapLeadToSupabase(lead) {
   const allotted = (lead.allottedTo || '').trim();
-  const person = (lead.concernPerson || allotted || 'Vishal Shah').trim();
-  const designation = (
-    lead.designationOfConcernPerson ||
-    PERSON_DESIGNATION_MAP[allotted] ||
-    PERSON_DESIGNATION_MAP[person] ||
-    'COO'
-  ).trim();
 
-  // If person does not already include designation suffix, format as 'Name - Designation'
-  const dbConcernPerson =
-    person.includes(' - ')
-      ? person
-      : (designation ? `${person} - ${designation}` : person);
+  // If allotted employee matches legacy constrained options, populate them to satisfy legacy column checks;
+  // otherwise leave null (which is permitted as these columns are nullable).
+  let dbConcernPerson = null;
+  let dbDesignation = null;
+
+  const normalized = normalizeConcernPerson(allotted || lead.concernPerson || '');
+  if (normalized === 'Vishal Shah') {
+    dbConcernPerson = 'Vishal Shah - COO';
+    dbDesignation = 'COO';
+  } else if (normalized === 'Jatin Bansal') {
+    dbConcernPerson = 'Jatin Bansal - Admin';
+    dbDesignation = 'Admin';
+  } else if (normalized === 'Satyanarayan Choudhary') {
+    dbConcernPerson = 'Satyanarayan Choudhary - GM (Architecture)';
+    dbDesignation = 'GM (Architecture)';
+  } else if (lead.concernPerson && (
+    lead.concernPerson === 'Vishal Shah - COO' ||
+    lead.concernPerson === 'Jatin Bansal - Admin' ||
+    lead.concernPerson === 'Satyanarayan Choudhary - GM (Architecture)'
+  )) {
+    dbConcernPerson = lead.concernPerson;
+    dbDesignation = lead.designationOfConcernPerson || null;
+  }
 
   const payload = {
     sr_no: Number(lead.srNo),
@@ -83,7 +94,7 @@ export function mapLeadToSupabase(lead) {
     location: (lead.location || '').trim(),
     concern_person: dbConcernPerson,
     contact_details: (lead.clientContact || lead.contactDetails || 'N/A').trim(),
-    designation: designation,
+    designation: dbDesignation,
     source_of_inquiry: lead.sourceOfInquiry || '',
     duration_of_work: (lead.durationOfWork || '').trim(),
     hurdles_specific_task: lead.hurdlesSpecificTask || '',

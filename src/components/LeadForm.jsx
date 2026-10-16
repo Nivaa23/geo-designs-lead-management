@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
   PERSON_DESIGNATION_MAP,
-  CONCERN_PERSON_OPTIONS,
   SOURCE_OF_INQUIRY_OPTIONS,
   HURDLES_OPTIONS
 } from '../data/mockLeads';
@@ -153,11 +152,11 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
       clientConcernPersonDesignationExternal: formData.clientConcernPersonDesignationExternal.trim(),
       sourceOfInquiry: formData.sourceOfInquiry,
       referenceBy: formData.referenceBy.trim(),
-      allottedTo: formData.allottedTo,
+      allottedTo: formData.allottedTo.trim(),
       // Mapped legacy columns to maintain backward compatibility & database constraint satisfaction
-      concernPerson: formData.allottedTo || 'Vishal Shah',
+      concernPerson: formData.allottedTo.trim() || '',
       contactDetails: formData.clientContact.trim() || 'N/A',
-      designationOfConcernPerson: PERSON_DESIGNATION_MAP[formData.allottedTo] || 'COO',
+      designationOfConcernPerson: PERSON_DESIGNATION_MAP[formData.allottedTo.trim()] || '',
       hurdlesSpecificTask: formData.hurdlesSpecificTask,
       remarks: formData.remarks.trim(),
       status: 'Active',
@@ -518,26 +517,21 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
                 <span className="field-hint">Person or entity providing the reference</span>
               </div>
 
-              {/* 3. Allotted To — NEW */}
+              {/* 3. Allotted To — Manual Text Input */}
               <div className="form-group full-width">
                 <label htmlFor="allottedTo" className="form-label">
                   Allotted To
                 </label>
-                <select
+                <input
+                  type="text"
                   ref={fieldRefs.allottedTo}
                   id="allottedTo"
                   name="allottedTo"
-                  className="form-select"
+                  className="form-input"
+                  placeholder="Enter employee name"
                   value={formData.allottedTo}
                   onChange={handleChange}
-                >
-                  <option value="">Select internal personnel (Optional)</option>
-                  {CONCERN_PERSON_OPTIONS.map((person) => (
-                    <option key={person} value={person}>
-                      {person} — {PERSON_DESIGNATION_MAP[person]}
-                    </option>
-                  ))}
-                </select>
+                />
                 <span className="field-hint">Internal team member assigned to handle this lead</span>
               </div>
             </div>

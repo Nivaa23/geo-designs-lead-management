@@ -26,8 +26,8 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
     onEdit(lead);
   };
 
-  const normalizedAllotted = normalizeConcernPerson(lead.allottedTo || lead.concernPerson);
-  const allottedDesignation = PERSON_DESIGNATION_MAP[normalizedAllotted] || lead.designationOfConcernPerson;
+  const allottedName = lead.allottedTo || normalizeConcernPerson(lead.concernPerson) || '';
+  const allottedDesignation = PERSON_DESIGNATION_MAP[allottedName] || lead.designationOfConcernPerson;
 
   return (
     <div
@@ -222,11 +222,11 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
               </div>
 
               <div className="detail-item full-width">
-                <span className="form-label">Allotted To (Internal Personnel)</span>
+                <span className="form-label">Allotted To</span>
                 <div className="detail-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {normalizedAllotted ? (
+                  {allottedName ? (
                     <>
-                      <strong>{normalizedAllotted}</strong>
+                      <strong>{allottedName}</strong>
                       {allottedDesignation && (
                         <span className="badge badge-designation">{allottedDesignation}</span>
                       )}
