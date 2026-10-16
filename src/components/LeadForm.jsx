@@ -5,20 +5,21 @@ import {
   SOURCE_OF_INQUIRY_OPTIONS,
   HURDLES_OPTIONS
 } from '../data/mockLeads';
-import { generateUniqueId } from '../utils/leadUtils';
 
 const INITIAL_FORM_STATE = {
+  tenderId: '',
   nameOfWorkEmplement: '',
-  scopeOfWork: '',
   nameOfClient: '',
   location: '',
-  concernPerson: '',
-  contactDetails: '',
-  designationOfConcernPerson: '',
-  sourceOfInquiry: '',
-  durationOfWork: '',
-  hurdlesSpecificTask: '',
   approximateAmount: '',
+  durationOfWork: '',
+  clientContact: '',
+  clientConcernedPersonExternal: '',
+  clientConcernPersonDesignationExternal: '',
+  sourceOfInquiry: '',
+  referenceBy: '',
+  allottedTo: '',
+  hurdlesSpecificTask: '',
   remarks: ''
 };
 
@@ -30,17 +31,19 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
 
   // Field refs for auto-focusing the first invalid field
   const fieldRefs = {
+    tenderId: useRef(null),
     nameOfWorkEmplement: useRef(null),
-    scopeOfWork: useRef(null),
     nameOfClient: useRef(null),
     location: useRef(null),
-    concernPerson: useRef(null),
-    contactDetails: useRef(null),
-    designationOfConcernPerson: useRef(null),
-    sourceOfInquiry: useRef(null),
-    durationOfWork: useRef(null),
-    hurdlesSpecificTask: useRef(null),
     approximateAmount: useRef(null),
+    durationOfWork: useRef(null),
+    clientContact: useRef(null),
+    clientConcernedPersonExternal: useRef(null),
+    clientConcernPersonDesignationExternal: useRef(null),
+    sourceOfInquiry: useRef(null),
+    referenceBy: useRef(null),
+    allottedTo: useRef(null),
+    hurdlesSpecificTask: useRef(null),
     remarks: useRef(null)
   };
 
@@ -58,23 +61,7 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
       });
     }
 
-    if (name === 'concernPerson') {
-      const mappedDesignation = PERSON_DESIGNATION_MAP[value] || '';
-      setFormData((prev) => ({
-        ...prev,
-        concernPerson: value,
-        designationOfConcernPerson: mappedDesignation
-      }));
-      if (errors.designationOfConcernPerson) {
-        setErrors((prev) => {
-          const next = { ...prev };
-          delete next.designationOfConcernPerson;
-          return next;
-        });
-      }
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -91,11 +78,9 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
       }
     };
 
+    // Validation for mandatory fields
     if (!formData.nameOfWorkEmplement.trim()) {
-      markError('nameOfWorkEmplement', 'Please enter the Name of Work Emplement.');
-    }
-    if (!formData.scopeOfWork.trim()) {
-      markError('scopeOfWork', 'Please enter the Scope of Work.');
+      markError('nameOfWorkEmplement', 'Please enter the Name of Work / Project.');
     }
     if (!formData.nameOfClient.trim()) {
       markError('nameOfClient', 'Please enter the Name of Client.');
@@ -103,30 +88,17 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
     if (!formData.location.trim()) {
       markError('location', 'Please enter the Location.');
     }
-    if (!formData.concernPerson) {
-      markError('concernPerson', 'Please select the Concern Person.');
+    if (!formData.approximateAmount.trim()) {
+      markError('approximateAmount', 'Please enter the Approximate Amount.');
     }
-    if (!formData.contactDetails.trim()) {
-      markError('contactDetails', 'Please enter the Contact Details.');
+    if (!formData.durationOfWork.trim()) {
+      markError('durationOfWork', 'Please enter the Duration of Work Confirmation / Allotment.');
     }
     if (!formData.sourceOfInquiry) {
       markError('sourceOfInquiry', 'Please select the Source of Inquiry.');
     }
-    if (!formData.durationOfWork.trim()) {
-      markError('durationOfWork', 'Please enter the duration of confirmation / allotment.');
-    }
     if (!formData.hurdlesSpecificTask) {
-      markError('hurdlesSpecificTask', 'Please select the Hurdles / specific task.');
-    }
-    if (!formData.approximateAmount.trim()) {
-      markError('approximateAmount', 'Please enter the Approximate amount.');
-    }
-
-    if (
-      formData.concernPerson &&
-      PERSON_DESIGNATION_MAP[formData.concernPerson] !== formData.designationOfConcernPerson
-    ) {
-      markError('designationOfConcernPerson', 'Designation is inconsistent with selected Concern Person.');
+      markError('hurdlesSpecificTask', 'Please select the Hurdles / Specific Task.');
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -144,17 +116,23 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
     const assignedSrNo = nextSrNo;
     const newLead = {
       srNo: assignedSrNo,
+      tenderId: formData.tenderId.trim(),
       nameOfWorkEmplement: formData.nameOfWorkEmplement.trim(),
-      scopeOfWork: formData.scopeOfWork.trim(),
       nameOfClient: formData.nameOfClient.trim(),
       location: formData.location.trim(),
-      concernPerson: formData.concernPerson,
-      contactDetails: formData.contactDetails.trim(),
-      designationOfConcernPerson: formData.designationOfConcernPerson,
-      sourceOfInquiry: formData.sourceOfInquiry,
-      durationOfWork: formData.durationOfWork.trim(),
-      hurdlesSpecificTask: formData.hurdlesSpecificTask,
       approximateAmount: formData.approximateAmount.trim(),
+      durationOfWork: formData.durationOfWork.trim(),
+      clientContact: formData.clientContact.trim(),
+      clientConcernedPersonExternal: formData.clientConcernedPersonExternal.trim(),
+      clientConcernPersonDesignationExternal: formData.clientConcernPersonDesignationExternal.trim(),
+      sourceOfInquiry: formData.sourceOfInquiry,
+      referenceBy: formData.referenceBy.trim(),
+      allottedTo: formData.allottedTo,
+      // Mapped legacy columns to maintain backward compatibility & database constraint satisfaction
+      concernPerson: formData.allottedTo || 'Vishal Shah',
+      contactDetails: formData.clientContact.trim() || 'N/A',
+      designationOfConcernPerson: PERSON_DESIGNATION_MAP[formData.allottedTo] || 'COO',
+      hurdlesSpecificTask: formData.hurdlesSpecificTask,
       remarks: formData.remarks.trim(),
       status: 'Active',
       requiresAttention: formData.hurdlesSpecificTask === 'Special Efforts',
@@ -196,7 +174,7 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
       <header className="content-header">
         <div className="header-titles">
           <h2 className="page-title" id="heading-add-lead">Add New Lead</h2>
-          <p className="page-subtitle">Enter the details of a new business inquiry.</p>
+          <p className="page-subtitle">Enter the details of a new business inquiry across five structured sections.</p>
         </div>
       </header>
 
@@ -236,280 +214,361 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
         )}
 
         <form id="lead-form" noValidate onSubmit={handleSubmit}>
-          <div className="form-grid">
-            {/* 1. Sr. No. */}
-            <div className="form-group">
-              <label htmlFor="srNo" className="form-label">
-                Sr. No. <span className="required-mark">*</span>
-              </label>
-              <input
-                type="text"
-                id="srNo"
-                name="srNo"
-                className="form-input"
-                readOnly
-                value={nextSrNo}
-                placeholder="Auto-generated"
-              />
-              <span className="field-hint">Auto-populated sequential identifier</span>
+          {/* SECTION 01 — Tender & Lead Identification */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 01</span>
+              <div>
+                <h3 className="form-section-title">Tender & Lead Identification</h3>
+                <div className="form-section-subtitle">Tender reference, serial assignment, and project identification</div>
+              </div>
             </div>
+            <div className="form-grid">
+              {/* 1. Tender ID — NEW (first field) */}
+              <div className="form-group">
+                <label htmlFor="tenderId" className="form-label">
+                  Tender ID
+                </label>
+                <input
+                  ref={fieldRefs.tenderId}
+                  type="text"
+                  id="tenderId"
+                  name="tenderId"
+                  className="form-input"
+                  placeholder="e.g. GEM/2026/B/891240 or TEND-1049"
+                  value={formData.tenderId}
+                  onChange={handleChange}
+                />
+                <span className="field-hint">Optional external tender reference identifier</span>
+              </div>
 
-            {/* 2. Name of Work Emplement */}
-            <div className="form-group">
-              <label htmlFor="nameOfWorkEmplement" className="form-label">
-                Name of Work Emplement <span className="required-mark">*</span>
-              </label>
-              <input
-                ref={fieldRefs.nameOfWorkEmplement}
-                type="text"
-                id="nameOfWorkEmplement"
-                name="nameOfWorkEmplement"
-                className={`form-input ${errors.nameOfWorkEmplement ? 'is-invalid' : ''}`}
-                placeholder="e.g. Topographical Survey & Geotechnical Soil Investigation"
-                value={formData.nameOfWorkEmplement}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-nameOfWorkEmplement">
-                {errors.nameOfWorkEmplement || ''}
-              </span>
+              {/* 2. Sr. No. — EXISTING, auto-generated and read-only */}
+              <div className="form-group">
+                <label htmlFor="srNo" className="form-label">
+                  Sr. No. <span className="required-mark">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="srNo"
+                  name="srNo"
+                  className="form-input"
+                  readOnly
+                  value={nextSrNo}
+                  placeholder="Auto-generated"
+                />
+                <span className="field-hint">Auto-populated sequential identifier</span>
+              </div>
+
+              {/* 3. Name of Work / Project — EXISTING */}
+              <div className="form-group full-width">
+                <label htmlFor="nameOfWorkEmplement" className="form-label">
+                  Name of Work / Project <span className="required-mark">*</span>
+                </label>
+                <input
+                  ref={fieldRefs.nameOfWorkEmplement}
+                  type="text"
+                  id="nameOfWorkEmplement"
+                  name="nameOfWorkEmplement"
+                  className={`form-input ${errors.nameOfWorkEmplement ? 'is-invalid' : ''}`}
+                  placeholder="e.g. Topographical Survey & Geotechnical Soil Investigation"
+                  value={formData.nameOfWorkEmplement}
+                  onChange={handleChange}
+                />
+                <span className="error-msg" id="error-nameOfWorkEmplement">
+                  {errors.nameOfWorkEmplement || ''}
+                </span>
+              </div>
             </div>
+          </div>
 
-            {/* 3. Scope of Work */}
-            <div className="form-group">
-              <label htmlFor="scopeOfWork" className="form-label">
-                Scope of Work <span className="required-mark">*</span>
-              </label>
-              <input
-                ref={fieldRefs.scopeOfWork}
-                type="text"
-                id="scopeOfWork"
-                name="scopeOfWork"
-                className={`form-input ${errors.scopeOfWork ? 'is-invalid' : ''}`}
-                placeholder="e.g. Contour mapping, DGPS benchmark pillar installation"
-                value={formData.scopeOfWork}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-scopeOfWork">
-                {errors.scopeOfWork || ''}
-              </span>
+          {/* SECTION 02 — Client & Project Location */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 02</span>
+              <div>
+                <h3 className="form-section-title">Client & Project Location</h3>
+                <div className="form-section-subtitle">Client organization, project geography, and financial estimates</div>
+              </div>
             </div>
+            <div className="form-grid">
+              {/* 1. Name of Client — EXISTING */}
+              <div className="form-group">
+                <label htmlFor="nameOfClient" className="form-label">
+                  Name of Client <span className="required-mark">*</span>
+                </label>
+                <input
+                  ref={fieldRefs.nameOfClient}
+                  type="text"
+                  id="nameOfClient"
+                  name="nameOfClient"
+                  className={`form-input ${errors.nameOfClient ? 'is-invalid' : ''}`}
+                  placeholder="e.g. Gujarat State Infrastructure Development Corp."
+                  value={formData.nameOfClient}
+                  onChange={handleChange}
+                />
+                <span className="error-msg" id="error-nameOfClient">
+                  {errors.nameOfClient || ''}
+                </span>
+              </div>
 
-            {/* 4. Name of Client */}
-            <div className="form-group">
-              <label htmlFor="nameOfClient" className="form-label">
-                Name of Client <span className="required-mark">*</span>
-              </label>
-              <input
-                ref={fieldRefs.nameOfClient}
-                type="text"
-                id="nameOfClient"
-                name="nameOfClient"
-                className={`form-input ${errors.nameOfClient ? 'is-invalid' : ''}`}
-                placeholder="e.g. Gujarat State Infrastructure Development Corp."
-                value={formData.nameOfClient}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-nameOfClient">
-                {errors.nameOfClient || ''}
-              </span>
+              {/* 2. Location — EXISTING */}
+              <div className="form-group">
+                <label htmlFor="location" className="form-label">
+                  Location <span className="required-mark">*</span>
+                </label>
+                <input
+                  ref={fieldRefs.location}
+                  type="text"
+                  id="location"
+                  name="location"
+                  className={`form-input ${errors.location ? 'is-invalid' : ''}`}
+                  placeholder="e.g. Gandhinagar, Gujarat"
+                  value={formData.location}
+                  onChange={handleChange}
+                />
+                <span className="error-msg" id="error-location">
+                  {errors.location || ''}
+                </span>
+              </div>
+
+              {/* 3. Approximate Amount — EXISTING */}
+              <div className="form-group">
+                <label htmlFor="approximateAmount" className="form-label">
+                  Approximate Amount <span className="required-mark">*</span>
+                </label>
+                <input
+                  ref={fieldRefs.approximateAmount}
+                  type="text"
+                  id="approximateAmount"
+                  name="approximateAmount"
+                  className={`form-input ${errors.approximateAmount ? 'is-invalid' : ''}`}
+                  placeholder="e.g. ₹ 8,50,000"
+                  value={formData.approximateAmount}
+                  onChange={handleChange}
+                />
+                <span className="error-msg" id="error-approximateAmount">
+                  {errors.approximateAmount || ''}
+                </span>
+              </div>
+
+              {/* 4. Duration of Work Confirmation / Allotment — EXISTING */}
+              <div className="form-group">
+                <label htmlFor="durationOfWork" className="form-label">
+                  Duration of Work Confirmation / Allotment <span className="required-mark">*</span>
+                </label>
+                <input
+                  ref={fieldRefs.durationOfWork}
+                  type="text"
+                  id="durationOfWork"
+                  name="durationOfWork"
+                  className={`form-input ${errors.durationOfWork ? 'is-invalid' : ''}`}
+                  placeholder="e.g. 15 working days / 3 weeks"
+                  value={formData.durationOfWork}
+                  onChange={handleChange}
+                />
+                <span className="error-msg" id="error-durationOfWork">
+                  {errors.durationOfWork || ''}
+                </span>
+              </div>
             </div>
+          </div>
 
-            {/* 5. Location */}
-            <div className="form-group">
-              <label htmlFor="location" className="form-label">
-                Location <span className="required-mark">*</span>
-              </label>
-              <input
-                ref={fieldRefs.location}
-                type="text"
-                id="location"
-                name="location"
-                className={`form-input ${errors.location ? 'is-invalid' : ''}`}
-                placeholder="e.g. Gandhinagar, Gujarat"
-                value={formData.location}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-location">
-                {errors.location || ''}
-              </span>
+          {/* SECTION 03 — External Client Contacts */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 03</span>
+              <div>
+                <h3 className="form-section-title">External Client Contacts</h3>
+                <div className="form-section-subtitle">External client representative details and organizational contact channels</div>
+              </div>
             </div>
+            <div className="form-grid">
+              {/* 1. Client Contact — NEW */}
+              <div className="form-group">
+                <label htmlFor="clientContact" className="form-label">
+                  Client Contact
+                </label>
+                <input
+                  ref={fieldRefs.clientContact}
+                  type="text"
+                  id="clientContact"
+                  name="clientContact"
+                  className="form-input"
+                  placeholder="e.g. +91 98250 11420 / contact@client.org"
+                  value={formData.clientContact}
+                  onChange={handleChange}
+                />
+                <span className="field-hint">Official contact number or email of client organization</span>
+              </div>
 
-            {/* 6. Concern Person */}
-            <div className="form-group">
-              <label htmlFor="concernPerson" className="form-label">
-                Concern Person <span className="required-mark">*</span>
-              </label>
-              <select
-                ref={fieldRefs.concernPerson}
-                id="concernPerson"
-                name="concernPerson"
-                className={`form-select ${errors.concernPerson ? 'is-invalid' : ''}`}
-                value={formData.concernPerson}
-                onChange={handleChange}
-              >
-                <option value="">Select Concern Person</option>
-                {CONCERN_PERSON_OPTIONS.map((person) => (
-                  <option key={person} value={person}>
-                    {person}
-                  </option>
-                ))}
-              </select>
-              <span className="error-msg" id="error-concernPerson">
-                {errors.concernPerson || ''}
-              </span>
+              {/* 2. Client Concerned Person (External) — NEW */}
+              <div className="form-group">
+                <label htmlFor="clientConcernedPersonExternal" className="form-label">
+                  Client Concerned Person (External)
+                </label>
+                <input
+                  ref={fieldRefs.clientConcernedPersonExternal}
+                  type="text"
+                  id="clientConcernedPersonExternal"
+                  name="clientConcernedPersonExternal"
+                  className="form-input"
+                  placeholder="e.g. Er. Nilesh Patel"
+                  value={formData.clientConcernedPersonExternal}
+                  onChange={handleChange}
+                />
+                <span className="field-hint">Primary contact person representing the client</span>
+              </div>
+
+              {/* 3. Client Concern Person Designation (External) — NEW */}
+              <div className="form-group full-width">
+                <label htmlFor="clientConcernPersonDesignationExternal" className="form-label">
+                  Client Concern Person Designation (External)
+                </label>
+                <input
+                  ref={fieldRefs.clientConcernPersonDesignationExternal}
+                  type="text"
+                  id="clientConcernPersonDesignationExternal"
+                  name="clientConcernPersonDesignationExternal"
+                  className="form-input"
+                  placeholder="e.g. Chief Project Engineer / Superintending Engineer"
+                  value={formData.clientConcernPersonDesignationExternal}
+                  onChange={handleChange}
+                />
+                <span className="field-hint">Designation or title of the external client contact person</span>
+              </div>
             </div>
+          </div>
 
-            {/* 7. Contact Details */}
-            <div className="form-group">
-              <label htmlFor="contactDetails" className="form-label">
-                Contact Details <span className="required-mark">*</span>
-              </label>
-              <input
-                ref={fieldRefs.contactDetails}
-                type="text"
-                id="contactDetails"
-                name="contactDetails"
-                className={`form-input ${errors.contactDetails ? 'is-invalid' : ''}`}
-                placeholder="e.g. +91 98250 11420 / contact@client.org"
-                value={formData.contactDetails}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-contactDetails">
-                {errors.contactDetails || ''}
-              </span>
+          {/* SECTION 04 — Internal Reference & Assignment */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 04</span>
+              <div>
+                <h3 className="form-section-title">Internal Reference & Assignment</h3>
+                <div className="form-section-subtitle">Lead inquiry source, reference channel, and internal employee allotment</div>
+              </div>
             </div>
+            <div className="form-grid">
+              {/* 1. Source of Inquiry — EXISTING */}
+              <div className="form-group">
+                <label htmlFor="sourceOfInquiry" className="form-label">
+                  Source of Inquiry <span className="required-mark">*</span>
+                </label>
+                <select
+                  ref={fieldRefs.sourceOfInquiry}
+                  id="sourceOfInquiry"
+                  name="sourceOfInquiry"
+                  className={`form-select ${errors.sourceOfInquiry ? 'is-invalid' : ''}`}
+                  value={formData.sourceOfInquiry}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Source of Inquiry</option>
+                  {SOURCE_OF_INQUIRY_OPTIONS.map((src) => (
+                    <option key={src} value={src}>
+                      {src}
+                    </option>
+                  ))}
+                </select>
+                <span className="error-msg" id="error-sourceOfInquiry">
+                  {errors.sourceOfInquiry || ''}
+                </span>
+              </div>
 
-            {/* 8. Designation of Concern Person */}
-            <div className="form-group">
-              <label htmlFor="designationOfConcernPerson" className="form-label">
-                Designation of Concern Person <span className="required-mark">*</span>
-              </label>
-              <select
-                ref={fieldRefs.designationOfConcernPerson}
-                id="designationOfConcernPerson"
-                name="designationOfConcernPerson"
-                className={`form-select ${errors.designationOfConcernPerson ? 'is-invalid' : ''}`}
-                disabled
-                value={formData.designationOfConcernPerson}
-                onChange={handleChange}
-              >
-                <option value="">Select Designation</option>
-                <option value="COO">COO</option>
-                <option value="Admin">Admin</option>
-                <option value="GM (Architecture)">GM (Architecture)</option>
-              </select>
-              <span className="field-hint">Automatically linked to Concern Person</span>
-              <span className="error-msg" id="error-designationOfConcernPerson">
-                {errors.designationOfConcernPerson || ''}
-              </span>
+              {/* 2. Reference By — NEW */}
+              <div className="form-group">
+                <label htmlFor="referenceBy" className="form-label">
+                  Reference By
+                </label>
+                <input
+                  ref={fieldRefs.referenceBy}
+                  type="text"
+                  id="referenceBy"
+                  name="referenceBy"
+                  className="form-input"
+                  placeholder="e.g. Direct Referral / Architect Mehta"
+                  value={formData.referenceBy}
+                  onChange={handleChange}
+                />
+                <span className="field-hint">Person or entity providing the reference</span>
+              </div>
+
+              {/* 3. Allotted To — NEW */}
+              <div className="form-group full-width">
+                <label htmlFor="allottedTo" className="form-label">
+                  Allotted To
+                </label>
+                <select
+                  ref={fieldRefs.allottedTo}
+                  id="allottedTo"
+                  name="allottedTo"
+                  className="form-select"
+                  value={formData.allottedTo}
+                  onChange={handleChange}
+                >
+                  <option value="">Select internal personnel (Optional)</option>
+                  {CONCERN_PERSON_OPTIONS.map((person) => (
+                    <option key={person} value={person}>
+                      {person} — {PERSON_DESIGNATION_MAP[person]}
+                    </option>
+                  ))}
+                </select>
+                <span className="field-hint">Internal team member assigned to handle this lead</span>
+              </div>
             </div>
+          </div>
 
-            {/* 9. Source of Inquiry */}
-            <div className="form-group">
-              <label htmlFor="sourceOfInquiry" className="form-label">
-                Source of Inquiry <span className="required-mark">*</span>
-              </label>
-              <select
-                ref={fieldRefs.sourceOfInquiry}
-                id="sourceOfInquiry"
-                name="sourceOfInquiry"
-                className={`form-select ${errors.sourceOfInquiry ? 'is-invalid' : ''}`}
-                value={formData.sourceOfInquiry}
-                onChange={handleChange}
-              >
-                <option value="">Select Source of Inquiry</option>
-                {SOURCE_OF_INQUIRY_OPTIONS.map((src) => (
-                  <option key={src} value={src}>
-                    {src}
-                  </option>
-                ))}
-              </select>
-              <span className="error-msg" id="error-sourceOfInquiry">
-                {errors.sourceOfInquiry || ''}
-              </span>
+          {/* SECTION 05 — Work Requirements & Notes */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 05</span>
+              <div>
+                <h3 className="form-section-title">Work Requirements & Notes</h3>
+                <div className="form-section-subtitle">Operational hurdles, specific task actions, and general observations</div>
+              </div>
             </div>
+            <div className="form-grid">
+              {/* 1. Hurdles / specific task — EXISTING */}
+              <div className="form-group">
+                <label htmlFor="hurdlesSpecificTask" className="form-label">
+                  Hurdles / Specific Task <span className="required-mark">*</span>
+                </label>
+                <select
+                  ref={fieldRefs.hurdlesSpecificTask}
+                  id="hurdlesSpecificTask"
+                  name="hurdlesSpecificTask"
+                  className={`form-select ${errors.hurdlesSpecificTask ? 'is-invalid' : ''}`}
+                  value={formData.hurdlesSpecificTask}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Hurdles / Specific Task</option>
+                  {HURDLES_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+                <span className="error-msg" id="error-hurdlesSpecificTask">
+                  {errors.hurdlesSpecificTask || ''}
+                </span>
+              </div>
 
-            {/* 10. Duration of work confirmation / allotment */}
-            <div className="form-group">
-              <label htmlFor="durationOfWork" className="form-label">
-                Duration of work confirmation / allotment <span className="required-mark">*</span>
-              </label>
-              <input
-                ref={fieldRefs.durationOfWork}
-                type="text"
-                id="durationOfWork"
-                name="durationOfWork"
-                className={`form-input ${errors.durationOfWork ? 'is-invalid' : ''}`}
-                placeholder="e.g. 15 working days / 3 weeks"
-                value={formData.durationOfWork}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-durationOfWork">
-                {errors.durationOfWork || ''}
-              </span>
-            </div>
-
-            {/* 11. Hurdles / specific task */}
-            <div className="form-group">
-              <label htmlFor="hurdlesSpecificTask" className="form-label">
-                Hurdles / specific task <span className="required-mark">*</span>
-              </label>
-              <select
-                ref={fieldRefs.hurdlesSpecificTask}
-                id="hurdlesSpecificTask"
-                name="hurdlesSpecificTask"
-                className={`form-select ${errors.hurdlesSpecificTask ? 'is-invalid' : ''}`}
-                value={formData.hurdlesSpecificTask}
-                onChange={handleChange}
-              >
-                <option value="">Select Hurdles / Specific Task</option>
-                {HURDLES_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-              <span className="error-msg" id="error-hurdlesSpecificTask">
-                {errors.hurdlesSpecificTask || ''}
-              </span>
-            </div>
-
-            {/* 12. Approximate amount */}
-            <div className="form-group">
-              <label htmlFor="approximateAmount" className="form-label">
-                Approximate amount <span className="required-mark">*</span>
-              </label>
-              <input
-                ref={fieldRefs.approximateAmount}
-                type="text"
-                id="approximateAmount"
-                name="approximateAmount"
-                className={`form-input ${errors.approximateAmount ? 'is-invalid' : ''}`}
-                placeholder="e.g. ₹ 8,50,000"
-                value={formData.approximateAmount}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-approximateAmount">
-                {errors.approximateAmount || ''}
-              </span>
-            </div>
-
-            {/* 13. Remarks */}
-            <div className="form-group full-width">
-              <label htmlFor="remarks" className="form-label">Remarks</label>
-              <input
-                ref={fieldRefs.remarks}
-                type="text"
-                id="remarks"
-                name="remarks"
-                className={`form-input ${errors.remarks ? 'is-invalid' : ''}`}
-                placeholder="e.g. Preliminary discussion completed; awaiting BoQ sign-off."
-                value={formData.remarks}
-                onChange={handleChange}
-              />
-              <span className="error-msg" id="error-remarks">
-                {errors.remarks || ''}
-              </span>
+              {/* 2. Remarks — EXISTING */}
+              <div className="form-group full-width">
+                <label htmlFor="remarks" className="form-label">Remarks</label>
+                <textarea
+                  ref={fieldRefs.remarks}
+                  id="remarks"
+                  name="remarks"
+                  className="form-input"
+                  style={{ minHeight: '84px', height: 'auto', padding: '10px 12px' }}
+                  placeholder="e.g. Preliminary discussion completed; awaiting BoQ sign-off."
+                  value={formData.remarks}
+                  onChange={handleChange}
+                />
+                <span className="error-msg" id="error-remarks">
+                  {errors.remarks || ''}
+                </span>
+              </div>
             </div>
           </div>
 

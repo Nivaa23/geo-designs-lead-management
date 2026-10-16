@@ -30,14 +30,20 @@ export function mapSupabaseToLead(row) {
   return {
     id: row.id,
     srNo: Number(row.sr_no),
+    tenderId: row.tender_id || '',
     nameOfWorkEmplement: row.work_name || '',
     scopeOfWork: row.scope_of_work || '',
     nameOfClient: row.client_name || '',
     location: row.location || '',
+    clientContact: row.client_contact || '',
+    clientConcernedPersonExternal: row.client_concerned_person_external || '',
+    clientConcernPersonDesignationExternal: row.client_concern_person_designation_external || '',
     concernPerson: normalizeConcernPerson(row.concern_person) || '',
     contactDetails: row.contact_details || '',
     designationOfConcernPerson: row.designation || '',
     sourceOfInquiry: row.source_of_inquiry || '',
+    referenceBy: row.reference_by || '',
+    allottedTo: row.allotted_to || '',
     durationOfWork: row.duration_of_work || '',
     hurdlesSpecificTask: row.hurdles_specific_task || '',
     approximateAmount: row.approximate_amount || '',
@@ -47,14 +53,21 @@ export function mapSupabaseToLead(row) {
 }
 
 /**
- * Maps frontend lead form fields to the verified public.leads database columns.
+ * Maps frontend lead form fields to the public.leads database columns.
  * Formats concern_person as expected by database constraints:
  * - leads_concern_person_check (requires 'Name - Designation')
  * - valid_concern_person_designation (requires matching designation)
+ * Maps allottedTo, clientContact, and other new fields cleanly.
  */
 export function mapLeadToSupabase(lead) {
-  const person = (lead.concernPerson || '').trim();
-  const designation = (lead.designationOfConcernPerson || '').trim();
+  const allotted = (lead.allottedTo || '').trim();
+  const person = (lead.concernPerson || allotted || 'Vishal Shah').trim();
+  const designation = (
+    lead.designationOfConcernPerson ||
+    PERSON_DESIGNATION_MAP[allotted] ||
+    PERSON_DESIGNATION_MAP[person] ||
+    'COO'
+  ).trim();
 
   // If person does not already include designation suffix, format as 'Name - Designation'
   const dbConcernPerson =
@@ -62,21 +75,35 @@ export function mapLeadToSupabase(lead) {
       ? person
       : (designation ? `${person} - ${designation}` : person);
 
-  return {
+  const payload = {
     sr_no: Number(lead.srNo),
-    work_name: lead.nameOfWorkEmplement.trim(),
-    scope_of_work: lead.scopeOfWork.trim(),
-    client_name: lead.nameOfClient.trim(),
-    location: lead.location.trim(),
+    work_name: (lead.nameOfWorkEmplement || '').trim(),
+    scope_of_work: (lead.scopeOfWork || '').trim(),
+    client_name: (lead.nameOfClient || '').trim(),
+    location: (lead.location || '').trim(),
     concern_person: dbConcernPerson,
-    contact_details: lead.contactDetails.trim(),
+    contact_details: (lead.clientContact || lead.contactDetails || 'N/A').trim(),
     designation: designation,
-    source_of_inquiry: lead.sourceOfInquiry,
-    duration_of_work: lead.durationOfWork.trim(),
-    hurdles_specific_task: lead.hurdlesSpecificTask,
-    approximate_amount: lead.approximateAmount.trim(),
+    source_of_inquiry: lead.sourceOfInquiry || '',
+    duration_of_work: (lead.durationOfWork || '').trim(),
+    hurdles_specific_task: lead.hurdlesSpecificTask || '',
+    approximate_amount: (lead.approximateAmount || '').trim(),
     remarks: (lead.remarks || '').trim()
   };
+
+  // Add the 6 new fields if provided
+  if (lead.tenderId !== undefined) payload.tender_id = (lead.tenderId || '').trim();
+  if (lead.clientContact !== undefined) payload.client_contact = (lead.clientContact || '').trim();
+  if (lead.clientConcernedPersonExternal !== undefined) {
+    payload.client_concerned_person_external = (lead.clientConcernedPersonExternal || '').trim();
+  }
+  if (lead.clientConcernPersonDesignationExternal !== undefined) {
+    payload.client_concern_person_designation_external = (lead.clientConcernPersonDesignationExternal || '').trim();
+  }
+  if (lead.referenceBy !== undefined) payload.reference_by = (lead.referenceBy || '').trim();
+  if (lead.allottedTo !== undefined) payload.allotted_to = (lead.allottedTo || '').trim();
+
+  return payload;
 }
 
 /**

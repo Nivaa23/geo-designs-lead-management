@@ -8,7 +8,7 @@ const ITEMS_PER_PAGE = 10;
 const FILTERABLE_COLUMNS = {
   concernPerson: {
     label: 'Concern Person',
-    getValue: (lead) => normalizeConcernPerson(lead.concernPerson) || '(Blank)'
+    getValue: (lead) => normalizeConcernPerson(lead.allottedTo || lead.concernPerson) || '(Blank)'
   },
   sourceOfInquiry: {
     label: 'Source of Inquiry',
@@ -72,15 +72,21 @@ export default function LeadsTable({
       if (query) {
         const searchableFields = [
           lead.srNo,
+          lead.tenderId,
           lead.nameOfWorkEmplement,
-          lead.scopeOfWork,
           lead.nameOfClient,
           lead.location,
+          lead.clientContact,
+          lead.clientConcernedPersonExternal,
+          lead.clientConcernPersonDesignationExternal,
           lead.concernPerson,
           normalizeConcernPerson(lead.concernPerson),
           lead.contactDetails,
           lead.designationOfConcernPerson,
           lead.sourceOfInquiry,
+          lead.referenceBy,
+          lead.allottedTo,
+          normalizeConcernPerson(lead.allottedTo),
           lead.durationOfWork,
           lead.hurdlesSpecificTask,
           lead.approximateAmount,
@@ -407,7 +413,6 @@ export default function LeadsTable({
                 <th scope="col" style={{ minWidth: '80px' }}>Sr. No.</th>
                 <th scope="col" style={{ minWidth: '95px', textAlign: 'center' }}>Action</th>
                 <th scope="col" style={{ minWidth: '220px' }}>Name of Work Emplement</th>
-                <th scope="col" style={{ minWidth: '200px' }}>Scope of Work</th>
                 <th scope="col" style={{ minWidth: '190px' }}>Name of Client</th>
                 <th scope="col" style={{ minWidth: '150px' }}>Location</th>
 
@@ -484,17 +489,17 @@ export default function LeadsTable({
             <tbody id="leads-table-body">
               {isLoading ? (
                 <tr className="empty-table-row">
-                  <td colSpan={15} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <td colSpan={14} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     Loading previous leads from database...
                   </td>
                 </tr>
               ) : leads.length === 0 ? (
                 <tr className="empty-table-row">
-                  <td colSpan={15}>No lead records found. Use the Add New Lead form to create one.</td>
+                  <td colSpan={14}>No lead records found. Use the Add New Lead form to create one.</td>
                 </tr>
               ) : filteredLeads.length === 0 ? (
                 <tr className="empty-table-row">
-                  <td colSpan={15} style={{ padding: '44px 24px', textAlign: 'center' }}>
+                  <td colSpan={14} style={{ padding: '44px 24px', textAlign: 'center' }}>
                     <div className="empty-filtered-container">
                       <Filter size={28} className="empty-filtered-icon" aria-hidden="true" />
                       <p className="empty-filtered-title">No matching leads found</p>
@@ -549,7 +554,6 @@ export default function LeadsTable({
                       </button>
                     </td>
                     <td><strong>{lead.nameOfWorkEmplement}</strong></td>
-                    <td>{lead.scopeOfWork}</td>
                     <td>{lead.nameOfClient}</td>
                     <td>{lead.location}</td>
                     <td>{normalizeConcernPerson(lead.concernPerson)}</td>

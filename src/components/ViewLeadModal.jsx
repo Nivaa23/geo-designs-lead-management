@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { normalizeConcernPerson } from '../data/mockLeads';
+import { normalizeConcernPerson, PERSON_DESIGNATION_MAP } from '../data/mockLeads';
 
 export default function ViewLeadModal({ lead, onClose, onEdit }) {
   // Handle ESC key to close modal
@@ -26,7 +26,8 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
     onEdit(lead);
   };
 
-  const normalizedPerson = normalizeConcernPerson(lead.concernPerson);
+  const normalizedAllotted = normalizeConcernPerson(lead.allottedTo || lead.concernPerson);
+  const allottedDesignation = PERSON_DESIGNATION_MAP[normalizedAllotted] || lead.designationOfConcernPerson;
 
   return (
     <div
@@ -37,7 +38,7 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
       aria-labelledby="view-modal-title"
       onClick={handleBackdropClick}
     >
-      <div className="modal-card">
+      <div className="modal-card" style={{ maxWidth: '850px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
         <div className="modal-header">
           <div className="view-modal-header-meta">
             <div>
@@ -46,8 +47,13 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
                 <span className="records-badge" id="view-modal-badge">
                   Lead #{lead.srNo}
                 </span>
+                {lead.tenderId && (
+                  <span className="badge badge-source" style={{ background: '#f1f5f9', color: '#475569' }}>
+                    Tender: {lead.tenderId}
+                  </span>
+                )}
               </div>
-              <p className="modal-subtitle">Complete information for the selected business inquiry.</p>
+              <p className="modal-subtitle">Complete information for the selected business inquiry across five sections.</p>
             </div>
           </div>
           <button
@@ -73,125 +79,191 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
           </button>
         </div>
 
-        <div className="modal-body">
-          <div className="form-grid">
-            {/* 1. Sr. No. */}
-            <div className="detail-item">
-              <span className="form-label">Sr. No.</span>
-              <div className="detail-value">{lead.srNo}</div>
-            </div>
-
-            {/* 2. Name of Work Emplement */}
-            <div className="detail-item">
-              <span className="form-label">Name of Work Emplement</span>
-              <div className="detail-value">
-                <strong>{lead.nameOfWorkEmplement || <span className="text-muted">Not provided</span>}</strong>
+        <div className="modal-body" style={{ overflowY: 'auto', padding: '24px 28px' }}>
+          {/* SECTION 01 — Tender & Lead Identification */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 01</span>
+              <div>
+                <h4 className="form-section-title">Tender & Lead Identification</h4>
               </div>
             </div>
+            <div className="form-grid">
+              <div className="detail-item">
+                <span className="form-label">Tender ID</span>
+                <div className="detail-value">
+                  {lead.tenderId || <span className="text-muted">Not specified</span>}
+                </div>
+              </div>
 
-            {/* 3. Scope of Work */}
-            <div className="detail-item">
-              <span className="form-label">Scope of Work</span>
-              <div className="detail-value text-multiline">
-                {lead.scopeOfWork || <span className="text-muted">Not provided</span>}
+              <div className="detail-item">
+                <span className="form-label">Sr. No.</span>
+                <div className="detail-value font-semibold">#{lead.srNo}</div>
+              </div>
+
+              <div className="detail-item full-width">
+                <span className="form-label">Name of Work / Project</span>
+                <div className="detail-value">
+                  <strong>{lead.nameOfWorkEmplement || <span className="text-muted">Not provided</span>}</strong>
+                </div>
+              </div>
+
+              <div className="detail-item full-width">
+                <span className="form-label">Scope of Work</span>
+                <div className="detail-value text-multiline">
+                  {lead.scopeOfWork || <span className="text-muted">Not provided</span>}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* 4. Name of Client */}
-            <div className="detail-item">
-              <span className="form-label">Name of Client</span>
-              <div className="detail-value">
-                {lead.nameOfClient || <span className="text-muted">Not provided</span>}
+          {/* SECTION 02 — Client & Project Location */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 02</span>
+              <div>
+                <h4 className="form-section-title">Client & Project Location</h4>
               </div>
             </div>
+            <div className="form-grid">
+              <div className="detail-item">
+                <span className="form-label">Name of Client</span>
+                <div className="detail-value">
+                  {lead.nameOfClient || <span className="text-muted">Not provided</span>}
+                </div>
+              </div>
 
-            {/* 5. Location */}
-            <div className="detail-item">
-              <span className="form-label">Location</span>
-              <div className="detail-value">
-                {lead.location || <span className="text-muted">Not provided</span>}
+              <div className="detail-item">
+                <span className="form-label">Location</span>
+                <div className="detail-value">
+                  {lead.location || <span className="text-muted">Not provided</span>}
+                </div>
+              </div>
+
+              <div className="detail-item">
+                <span className="form-label">Approximate Amount</span>
+                <div className="detail-value amount-cell">
+                  {lead.approximateAmount || <span className="text-muted">Not provided</span>}
+                </div>
+              </div>
+
+              <div className="detail-item">
+                <span className="form-label">Duration of Work Confirmation / Allotment</span>
+                <div className="detail-value">
+                  {lead.durationOfWork || <span className="text-muted">Not provided</span>}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* 6. Concern Person */}
-            <div className="detail-item">
-              <span className="form-label">Concern Person</span>
-              <div className="detail-value">
-                {normalizedPerson || <span className="text-muted">Not provided</span>}
+          {/* SECTION 03 — External Client Contacts */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 03</span>
+              <div>
+                <h4 className="form-section-title">External Client Contacts</h4>
               </div>
             </div>
+            <div className="form-grid">
+              <div className="detail-item">
+                <span className="form-label">Client Contact</span>
+                <div className="detail-value">
+                  {lead.clientContact || lead.contactDetails || <span className="text-muted">Not provided</span>}
+                </div>
+              </div>
 
-            {/* 7. Contact Details */}
-            <div className="detail-item">
-              <span className="form-label">Contact Details</span>
-              <div className="detail-value">
-                {lead.contactDetails || <span className="text-muted">Not provided</span>}
+              <div className="detail-item">
+                <span className="form-label">Client Concerned Person (External)</span>
+                <div className="detail-value">
+                  {lead.clientConcernedPersonExternal || <span className="text-muted">Not provided</span>}
+                </div>
+              </div>
+
+              <div className="detail-item full-width">
+                <span className="form-label">Client Concern Person Designation (External)</span>
+                <div className="detail-value">
+                  {lead.clientConcernPersonDesignationExternal ? (
+                    <span className="badge badge-designation">
+                      {lead.clientConcernPersonDesignationExternal}
+                    </span>
+                  ) : (
+                    <span className="text-muted">Not provided</span>
+                  )}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* 8. Designation of Concern Person */}
-            <div className="detail-item">
-              <span className="form-label">Designation of Concern Person</span>
-              <div className="detail-value">
-                {lead.designationOfConcernPerson ? (
-                  <span className="badge badge-designation">
-                    {lead.designationOfConcernPerson}
-                  </span>
-                ) : (
-                  <span className="text-muted">Not provided</span>
-                )}
+          {/* SECTION 04 — Internal Reference & Assignment */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 04</span>
+              <div>
+                <h4 className="form-section-title">Internal Reference & Assignment</h4>
               </div>
             </div>
+            <div className="form-grid">
+              <div className="detail-item">
+                <span className="form-label">Source of Inquiry</span>
+                <div className="detail-value">
+                  {lead.sourceOfInquiry ? (
+                    <span className="badge badge-source">{lead.sourceOfInquiry}</span>
+                  ) : (
+                    <span className="text-muted">Not provided</span>
+                  )}
+                </div>
+              </div>
 
-            {/* 9. Source of Inquiry */}
-            <div className="detail-item">
-              <span className="form-label">Source of Inquiry</span>
-              <div className="detail-value">
-                {lead.sourceOfInquiry ? (
-                  <span className="badge badge-source">
-                    {lead.sourceOfInquiry}
-                  </span>
-                ) : (
-                  <span className="text-muted">Not provided</span>
-                )}
+              <div className="detail-item">
+                <span className="form-label">Reference By</span>
+                <div className="detail-value">
+                  {lead.referenceBy || <span className="text-muted">Not provided</span>}
+                </div>
+              </div>
+
+              <div className="detail-item full-width">
+                <span className="form-label">Allotted To (Internal Personnel)</span>
+                <div className="detail-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {normalizedAllotted ? (
+                    <>
+                      <strong>{normalizedAllotted}</strong>
+                      {allottedDesignation && (
+                        <span className="badge badge-designation">{allottedDesignation}</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-muted">Not assigned</span>
+                  )}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* 10. Duration of work confirmation / allotment */}
-            <div className="detail-item">
-              <span className="form-label">Duration of work confirmation / allotment</span>
-              <div className="detail-value">
-                {lead.durationOfWork || <span className="text-muted">Not provided</span>}
+          {/* SECTION 05 — Work Requirements & Notes */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 05</span>
+              <div>
+                <h4 className="form-section-title">Work Requirements & Notes</h4>
               </div>
             </div>
-
-            {/* 11. Hurdles / specific task */}
-            <div className="detail-item">
-              <span className="form-label">Hurdles / specific task</span>
-              <div className="detail-value">
-                {lead.hurdlesSpecificTask ? (
-                  <span className="badge badge-hurdle">
-                    {lead.hurdlesSpecificTask}
-                  </span>
-                ) : (
-                  <span className="text-muted">Not provided</span>
-                )}
+            <div className="form-grid">
+              <div className="detail-item">
+                <span className="form-label">Hurdles / Specific Task</span>
+                <div className="detail-value">
+                  {lead.hurdlesSpecificTask ? (
+                    <span className="badge badge-hurdle">{lead.hurdlesSpecificTask}</span>
+                  ) : (
+                    <span className="text-muted">Not provided</span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* 12. Approximate amount */}
-            <div className="detail-item">
-              <span className="form-label">Approximate amount</span>
-              <div className="detail-value amount-cell">
-                {lead.approximateAmount || <span className="text-muted">Not provided</span>}
-              </div>
-            </div>
-
-            {/* 13. Remarks */}
-            <div className="detail-item full-width">
-              <span className="form-label">Remarks</span>
-              <div className="detail-value text-multiline">
-                {lead.remarks ? lead.remarks : <span className="text-muted">Not provided</span>}
+              <div className="detail-item full-width">
+                <span className="form-label">Remarks</span>
+                <div className="detail-value text-multiline">
+                  {lead.remarks ? lead.remarks : <span className="text-muted">Not provided</span>}
+                </div>
               </div>
             </div>
           </div>
@@ -222,7 +294,7 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M11 4H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
             <span>Edit Lead</span>
