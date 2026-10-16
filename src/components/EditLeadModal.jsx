@@ -6,6 +6,7 @@ import {
   HURDLES_OPTIONS,
   normalizeConcernPerson
 } from '../data/mockLeads';
+import { formatCurrencyInput } from '../utils/leadUtils';
 
 export default function EditLeadModal({ lead, onSave, onClose }) {
   const [formData, setFormData] = useState({
@@ -93,6 +94,31 @@ export default function EditLeadModal({ lead, onSave, onClose }) {
         delete next[name];
         return next;
       });
+    }
+
+    if (name === 'approximateAmount') {
+      const input = e.target;
+      const cursor = input.selectionStart || 0;
+      const digitsBefore = (value.slice(0, cursor).match(/\d/g) || []).length;
+      const formatted = formatCurrencyInput(value);
+
+      setFormData((prev) => ({ ...prev, approximateAmount: formatted }));
+
+      requestAnimationFrame(() => {
+        if (input && document.activeElement === input) {
+          let count = 0;
+          let newCursor = formatted.length;
+          for (let i = 0; i < formatted.length; i++) {
+            if (/\d/.test(formatted[i])) count++;
+            if (count === digitsBefore) {
+              newCursor = i + 1;
+              break;
+            }
+          }
+          input.setSelectionRange(newCursor, newCursor);
+        }
+      });
+      return;
     }
 
     setFormData((prev) => ({ ...prev, [name]: value }));

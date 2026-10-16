@@ -5,6 +5,7 @@ import {
   SOURCE_OF_INQUIRY_OPTIONS,
   HURDLES_OPTIONS
 } from '../data/mockLeads';
+import { formatCurrencyInput } from '../utils/leadUtils';
 
 const INITIAL_FORM_STATE = {
   tenderId: '',
@@ -59,6 +60,31 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
         delete next[name];
         return next;
       });
+    }
+
+    if (name === 'approximateAmount') {
+      const input = e.target;
+      const cursor = input.selectionStart || 0;
+      const digitsBefore = (value.slice(0, cursor).match(/\d/g) || []).length;
+      const formatted = formatCurrencyInput(value);
+
+      setFormData((prev) => ({ ...prev, approximateAmount: formatted }));
+
+      requestAnimationFrame(() => {
+        if (input && document.activeElement === input) {
+          let count = 0;
+          let newCursor = formatted.length;
+          for (let i = 0; i < formatted.length; i++) {
+            if (/\d/.test(formatted[i])) count++;
+            if (count === digitsBefore) {
+              newCursor = i + 1;
+              break;
+            }
+          }
+          input.setSelectionRange(newCursor, newCursor);
+        }
+      });
+      return;
     }
 
     setFormData((prev) => ({ ...prev, [name]: value }));

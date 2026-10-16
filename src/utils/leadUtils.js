@@ -230,6 +230,31 @@ export function formatIndianCurrency(amount) {
 }
 
 /**
+ * Formats a live user currency input with the default INR symbol (₹) and Indian comma notation.
+ * Automatically prepends the INR symbol '₹ ' when numbers are entered, while clearing when empty.
+ */
+export function formatCurrencyInput(val) {
+  if (!val) return '';
+  const hasDigit = /\d/.test(val);
+  if (!hasDigit) return '';
+
+  const cleanVal = String(val).replace(/^(₹|INR|Rs\.?)\s*/i, '');
+  const parts = cleanVal.split('.');
+  const intDigits = parts[0].replace(/\D/g, '');
+
+  if (!intDigits && parts.length === 1) return '';
+
+  const formattedInt = intDigits ? Number(intDigits).toLocaleString('en-IN') : '0';
+
+  if (parts.length > 1) {
+    const decDigits = parts[1].replace(/\D/g, '').slice(0, 2);
+    return `₹ ${formattedInt}.${decDigits}`;
+  }
+
+  return `₹ ${formattedInt}`;
+}
+
+/**
  * Determines whether a lead explicitly requires follow-up attention.
  * Evaluates explicit boolean flag or active task hurdles ('Special Efforts' / 'Presentation').
  */
