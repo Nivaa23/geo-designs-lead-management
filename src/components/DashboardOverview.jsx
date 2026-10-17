@@ -18,7 +18,6 @@ import {
   normalizeConcernPerson
 } from '../data/mockLeads';
 import LeadActivityTrendsChart from './LeadActivityTrendsChart';
-import LeadStatusDoughnutChart from './LeadStatusDoughnutChart';
 
 export default function DashboardOverview({
   leads = [],
@@ -76,7 +75,68 @@ export default function DashboardOverview({
     return getTrendSeries(selectedPeriod, leads);
   }, [selectedPeriod, leads]);
 
-  // 4. Inquiry Source Distribution Data (scoped to selected period)
+  // 4. Client Distribution Data (scoped to selected period)
+  const [showAllClients, setShowAllClients] = useState(false);
+  const INITIAL_CLIENTS_LIMIT = 5;
+
+  const clientStats = useMemo(() => {
+    const total = currentPeriodLeads.length;
+    if (total === 0) {
+      return {
+        items: [],
+        total: 0,
+        maxCount: 0,
+        uniqueClientsCount: 0
+      };
+    }
+
+    // Group records by client name, handling leading/trailing whitespace and case differences consistently
+    const clientMap = new Map();
+
+    currentPeriodLeads.forEach((lead) => {
+      const rawName = typeof lead?.nameOfClient === 'string' ? lead.nameOfClient.trim() : '';
+      const displayName = rawName || 'Unspecified Client';
+      const key = displayName.toLowerCase();
+
+      if (!clientMap.has(key)) {
+        clientMap.set(key, {
+          client: displayName,
+          count: 0
+        });
+      }
+      const entry = clientMap.get(key);
+      entry.count += 1;
+    });
+
+    const items = Array.from(clientMap.values()).map((entry) => ({
+      client: entry.client,
+      count: entry.count,
+      percentage: (entry.count / total) * 100
+    }));
+
+    // Sort clients by lead count in descending order, then alphabetically by client name
+    items.sort((a, b) => {
+      if (b.count !== a.count) {
+        return b.count - a.count;
+      }
+      return a.client.localeCompare(b.client);
+    });
+
+    const maxCount = Math.max(...items.map((i) => i.count), 1);
+
+    return {
+      items,
+      total,
+      maxCount,
+      uniqueClientsCount: items.length
+    };
+  }, [currentPeriodLeads]);
+
+  const displayedClients = showAllClients
+    ? clientStats.items
+    : clientStats.items.slice(0, INITIAL_CLIENTS_LIMIT);
+
+  // 5. Inquiry Source Distribution Data (scoped to selected period)
   const sourceStats = useMemo(() => {
     const total = currentPeriodLeads.length;
     const items = SOURCE_OF_INQUIRY_OPTIONS.map((source) => {
@@ -279,21 +339,73 @@ export default function DashboardOverview({
         </div>
       </section>
 
-      {/* Row 3 — Lead Status Distribution & Inquiry Source Distribution */}
+      {/* Row 3 — Client Distribution & Inquiry Source Distribution */}
       <div className="dashboard-grid-row-4">
-        {/* Card 3A: Lead Status Distribution */}
-        <section className="dashboard-card" id="section-status-distribution" aria-labelledby="heading-status-distribution">
+        {/* Card 3A: Client Distribution */}
+        <section className="dashboard-card" id="section-client-distribution" aria-labelledby="heading-client-distribution">
           <div className="dashboard-card-header">
             <div>
-              <h3 className="dashboard-card-title" id="heading-status-distribution">Lead Status Distribution</h3>
-              <p className="dashboard-card-subtitle">Understand the current status of recorded opportunities.</p>
+              <h3 className="dashboard-card-title" id="heading-client-distribution">Client Distribution</h3>
+              <p className="dashboard-card-subtitle">Understand how recorded leads are distributed across clients.</p>
             </div>
             <div className="dashboard-card-meta">
-              <span className="records-badge" title="Status column is not present in the current Supabase database table schema">Status not tracked</span>
+              <span className="records-badge">{clientStats.uniqueClientsCount} {clientStats.uniqueClientsCount === 1 ? 'Client' : 'Clients'}</span>
             </div>
           </div>
           <div className="dashboard-card-body">
-            <LeadStatusDoughnutChart leads={currentPeriodLeads} />
+            {clientStats.total === 0 ? (
+              <div className="dashboard-empty-state" id="empty-client-distribution" style={{ padding: '36px 16px' }}>
+                <p className="empty-state-text">No recorded leads for the selected period.</p>
+              </div>
+            ) : (
+              <div className="client-distribution-list" id="client-distribution-list">
+                {displayedClients.map((item) => {
+                  const barFillWidth = clientStats.maxCount > 0
+                    ? (item.count / clientStats.maxCount) * 100
+                    : 0;
+
+                  return (
+                    <div key={item.client} className="client-distribution-item">
+                      <div className="client-header">
+                        <span className="client-name" title={item.client}>{item.client}</span>
+                        <div className="client-meta">
+                          <span className="client-count">{item.count} {item.count === 1 ? 'lead' : 'leads'}</span>
+                          <span className="client-pct">({item.percentage.toFixed(1)}%)</span>
+                        </div>
+                      </div>
+                      <div
+                        className="client-bar-track"
+                        role="progressbar"
+                        aria-valuenow={item.percentage}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${item.client}: ${item.count} ${item.count === 1 ? 'lead' : 'leads'} (${item.percentage.toFixed(1)}%)`}
+                      >
+                        <div
+                          className="client-bar-fill"
+                          style={{ width: `${barFillWidth}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {clientStats.items.length > INITIAL_CLIENTS_LIMIT && (
+                  <div className="client-toggle-wrapper">
+                    <button
+                      type="button"
+                      className="btn-client-toggle"
+                      onClick={() => setShowAllClients((prev) => !prev)}
+                      aria-expanded={showAllClients}
+                    >
+                      {showAllClients
+                        ? 'Show fewer clients'
+                        : `Show all ${clientStats.items.length} clients (+${clientStats.items.length - INITIAL_CLIENTS_LIMIT} more)`}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
 

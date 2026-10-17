@@ -2171,122 +2171,92 @@ html, body {
   align-items: stretch;
 }
 
-/* Lead Status Doughnut Chart */
-.doughnut-chart-container {
+/* Client Distribution List */
+.client-distribution-list {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 24px;
+  flex-direction: column;
+  gap: 16px;
   padding: 24px;
-  flex-wrap: wrap;
 }
 
-.doughnut-svg-wrapper {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  flex-shrink: 0;
-}
-
-.doughnut-svg {
-  width: 100%;
-  height: 100%;
-}
-
-.doughnut-center-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.client-distribution-item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  pointer-events: none;
+  gap: 6px;
 }
 
-.doughnut-center-number {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.doughnut-center-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-top: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.doughnut-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-width: 190px;
-}
-
-.doughnut-legend-row {
+.client-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border-left: 3px solid transparent;
-  transition: all 0.18s ease;
-  cursor: pointer;
-}
-
-.doughnut-legend-row:hover,
-.doughnut-legend-row.row-active {
-  background-color: #f8fafc;
-}
-
-.doughnut-slice {
-  transition: stroke-width 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, filter 0.2s ease;
-  cursor: pointer;
-}
-
-.doughnut-slice:focus-visible {
-  outline: none;
-}
-
-.legend-name-group {
-  display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
 }
 
-.status-color-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-name {
+.client-name {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.legend-stat-group {
+.client-meta {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
+  flex-shrink: 0;
 }
 
-.status-count {
+.client-count {
   font-weight: 700;
   color: var(--text-primary);
 }
 
-.status-pct {
+.client-pct {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
+}
+
+.client-bar-track {
+  height: 8px;
+  width: 100%;
+  background-color: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.client-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  border-radius: 999px;
+  transition: width 0.3s ease-in-out;
+  min-width: 0;
+}
+
+.client-toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.btn-client-toggle {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-client-toggle:hover {
+  color: #4338ca;
+  background-color: #f1f5f9;
 }
 
 /* Inquiry Source Distribution List */
@@ -3274,6 +3244,7 @@ html, body {
     gap: 8px;
   }
 
+  .client-distribution-list,
   .source-distribution-list,
   .hurdle-distribution-list {
     padding: 16px;
