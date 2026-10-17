@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { Paperclip, FileText, X } from 'lucide-react';
 import {
   PERSON_DESIGNATION_MAP,
   SOURCE_OF_INQUIRY_OPTIONS,
@@ -28,6 +29,11 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
   const [errors, setErrors] = useState({});
   const [banner, setBanner] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // File Attachments State
+  const [attachedFiles, setAttachedFiles] = useState([]);
+  const [attachmentError, setAttachmentError] = useState('');
+  const fileInputRef = useRef(null);
 
   // Field refs for auto-focusing the first invalid field
   const fieldRefs = {
@@ -87,6 +93,75 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
     }
 
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Format file size utility
+  const formatFileSize = (bytes) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  // File Selection Handler with duplicate prevention and validation
+  const handleFileSelect = (e) => {
+    setAttachmentError('');
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const MAX_SIZE_MB = 25;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+    const newFiles = [];
+    const rejectedFiles = [];
+    const duplicateNames = [];
+
+    files.forEach((file) => {
+      if (file.size > MAX_SIZE_BYTES) {
+        rejectedFiles.push(`${file.name} (exceeds ${MAX_SIZE_MB}MB limit)`);
+        return;
+      }
+
+      const isDuplicate =
+        attachedFiles.some(
+          (existing) => existing.name === file.name && existing.size === file.size
+        ) ||
+        newFiles.some(
+          (added) => added.name === file.name && added.size === file.size
+        );
+
+      if (isDuplicate) {
+        duplicateNames.push(file.name);
+        return;
+      }
+
+      newFiles.push(file);
+    });
+
+    if (rejectedFiles.length > 0) {
+      setAttachmentError(`Some files were rejected: ${rejectedFiles.join(', ')}`);
+    } else if (duplicateNames.length > 0) {
+      setAttachmentError(`Duplicate files skipped: ${duplicateNames.join(', ')}`);
+    }
+
+    if (newFiles.length > 0) {
+      setAttachedFiles((prev) => [...prev, ...newFiles]);
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveFile = (indexToRemove) => {
+    setAttachedFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    setAttachmentError('');
+  };
+
+  const handleTriggerPicker = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -173,12 +248,17 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
           message: result.error || 'Failed to save lead to the database. Please try again.'
         });
       } else {
+        const stagedFilesCount = attachedFiles.length;
         // Reset form only after successful database insert
         setFormData(INITIAL_FORM_STATE);
+        setAttachedFiles([]);
+        setAttachmentError('');
         setErrors({});
         setBanner({
-          type: 'success',
-          message: `Lead #${assignedSrNo} has been successfully recorded in the database.`
+          type: stagedFilesCount > 0 ? 'warning' : 'success',
+          message: stagedFilesCount > 0
+            ? `Lead #${assignedSrNo} was recorded in the database. Notice: ${stagedFilesCount} attachment(s) could not be uploaded to cloud storage because Supabase Storage is not yet configured.`
+            : `Lead #${assignedSrNo} has been successfully recorded in the database.`
         });
       }
     } catch (err) {
@@ -225,6 +305,12 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
                 <>
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                   <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </>
+              ) : banner.type === 'warning' ? (
+                <>
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </>
               ) : (
                 <>
@@ -588,6 +674,81 @@ export default function LeadForm({ nextSrNo, onAddLead }) {
                 <span className="error-msg" id="error-remarks">
                   {errors.remarks || ''}
                 </span>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 06 — File Attachments */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 06</span>
+              <div>
+                <h3 className="form-section-title">File Attachments</h3>
+                <div className="form-section-subtitle">Attach relevant tender notices, BoQs, drawings, or supporting documents</div>
+              </div>
+            </div>
+
+            <div className="attachment-control-container">
+              {/* Hidden Native File Input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                id="file-attachments-input"
+                className="visually-hidden-file-input"
+                multiple
+                onChange={handleFileSelect}
+                aria-label="Upload file attachments"
+              />
+
+              {/* Attach Files Trigger Button */}
+              <button
+                type="button"
+                className="btn-attach-files"
+                id="btn-attach-files"
+                onClick={handleTriggerPicker}
+                aria-controls="attached-files-list"
+              >
+                <Paperclip size={16} aria-hidden="true" />
+                <span>Attach Files</span>
+              </button>
+
+              <span className="field-hint" style={{ marginTop: '8px', display: 'block' }}>
+                You can select one or multiple files (PDF, DOCX, XLSX, drawings, or images up to 25MB each).
+              </span>
+
+              {/* Error feedback if files rejected or duplicate */}
+              {attachmentError && (
+                <div className="attachment-feedback-msg" role="alert" style={{ marginTop: '8px', color: 'var(--error-main)', fontSize: '12px' }}>
+                  {attachmentError}
+                </div>
+              )}
+
+              {/* Selected Files List / Preview */}
+              {attachedFiles.length > 0 && (
+                <div className="attached-files-list" id="attached-files-list" aria-label="Selected file attachments">
+                  {attachedFiles.map((file, idx) => (
+                    <div key={`${file.name}-${file.size}-${idx}`} className="attached-file-item">
+                      <div className="attached-file-info">
+                        <FileText size={15} className="attached-file-icon" aria-hidden="true" />
+                        <span className="attached-file-name" title={file.name}>{file.name}</span>
+                        <span className="attached-file-size">({formatFileSize(file.size)})</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-remove-attachment"
+                        onClick={() => handleRemoveFile(idx)}
+                        aria-label={`Remove ${file.name}`}
+                        title={`Remove ${file.name}`}
+                      >
+                        <X size={14} aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="storage-prerequisite-notice" style={{ marginTop: '14px', padding: '10px 14px', borderRadius: '6px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                <strong>Storage Note:</strong> Cloud persistence requires a configured Supabase Storage bucket (<code>lead-attachments</code>). Selected files are validated and staged in the interface.
               </div>
             </div>
           </div>

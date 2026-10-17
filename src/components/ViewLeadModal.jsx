@@ -267,6 +267,44 @@ export default function ViewLeadModal({ lead, onClose, onEdit }) {
               </div>
             </div>
           </div>
+
+          {/* SECTION 06 — File Attachments */}
+          <div className="form-section">
+            <div className="form-section-header">
+              <span className="form-section-badge">Section 06</span>
+              <div>
+                <h4 className="form-section-title">File Attachments</h4>
+              </div>
+            </div>
+            <div className="form-grid">
+              <div className="detail-item full-width">
+                <span className="form-label">Attached Files</span>
+                <div className="detail-value">
+                  {Array.isArray(lead.attachedFiles) && lead.attachedFiles.length > 0 ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                      {lead.attachedFiles.map((file, idx) => (
+                        <span key={idx} className="badge badge-source" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                          </svg>
+                          <span>{typeof file === 'string' ? file : file.name}</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : lead.attachedFiles && typeof lead.attachedFiles === 'string' ? (
+                    <span className="badge badge-source" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                      </svg>
+                      <span>{lead.attachedFiles}</span>
+                    </span>
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="modal-footer">

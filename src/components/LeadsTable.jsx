@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Eye, Search, X, Filter, Check } from 'lucide-react';
+import { Eye, Search, X, Filter, Check, Paperclip } from 'lucide-react';
 import { sortLeadsAscending } from '../utils/leadUtils';
 import { normalizeConcernPerson } from '../data/mockLeads';
 
@@ -90,7 +90,8 @@ export default function LeadsTable({
           lead.durationOfWork,
           lead.hurdlesSpecificTask,
           lead.approximateAmount,
-          lead.remarks
+          lead.remarks,
+          lead.attachedFiles
         ];
 
         const matchesQuery = searchableFields.some((field) => {
@@ -411,7 +412,7 @@ export default function LeadsTable({
             <thead>
               <tr>
                 <th scope="col" style={{ minWidth: '80px' }}>Sr. No.</th>
-                <th scope="col" style={{ minWidth: '95px', textAlign: 'center' }}>Action</th>
+                <th scope="col" style={{ minWidth: '125px', textAlign: 'center' }}>Action</th>
                 <th scope="col" style={{ minWidth: '220px' }}>Name of Work Emplement</th>
                 <th scope="col" style={{ minWidth: '190px' }}>Name of Client</th>
                 <th scope="col" style={{ minWidth: '150px' }}>Location</th>
@@ -483,7 +484,7 @@ export default function LeadsTable({
 
                 <th scope="col" style={{ minWidth: '150px' }}>Approximate amount</th>
                 <th scope="col" style={{ minWidth: '220px' }}>Remarks</th>
-                <th scope="col" style={{ minWidth: '110px', textAlign: 'center' }}>Actions</th>
+                <th scope="col" style={{ minWidth: '140px' }}>Attached Files</th>
               </tr>
             </thead>
             <tbody id="leads-table-body">
@@ -535,52 +536,23 @@ export default function LeadsTable({
                   >
                     <td className="sr-no-cell">{lead.srNo}</td>
                     <td
-                      className="action-view-cell"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        className="btn-table-view"
-                        data-id={lead.id}
-                        title={`View Lead #${lead.srNo}`}
-                        aria-label={`View Lead #${lead.srNo}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onView && onView(lead);
-                        }}
-                      >
-                        <Eye size={14} aria-hidden="true" />
-                        <span>View</span>
-                      </button>
-                    </td>
-                    <td><strong>{lead.nameOfWorkEmplement}</strong></td>
-                    <td>{lead.nameOfClient}</td>
-                    <td>{lead.location}</td>
-                    <td>{lead.allottedTo || normalizeConcernPerson(lead.concernPerson) || '—'}</td>
-                    <td>{lead.contactDetails}</td>
-                    <td>
-                      <span className="badge badge-designation">
-                        {lead.designationOfConcernPerson}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge badge-source">
-                        {lead.sourceOfInquiry}
-                      </span>
-                    </td>
-                    <td>{lead.durationOfWork}</td>
-                    <td>
-                      <span className="badge badge-hurdle">
-                        {lead.hurdlesSpecificTask}
-                      </span>
-                    </td>
-                    <td className="amount-cell">{lead.approximateAmount}</td>
-                    <td>{lead.remarks || '—'}</td>
-                    <td
                       className="actions-cell"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="actions-cell-inner">
+                        <button
+                          type="button"
+                          className="btn-action btn-action-view"
+                          data-id={lead.id}
+                          title={`View Lead #${lead.srNo}`}
+                          aria-label={`View Lead #${lead.srNo}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onView && onView(lead);
+                          }}
+                        >
+                          <Eye size={15} aria-hidden="true" />
+                        </button>
                         <button
                           type="button"
                           className="btn-action btn-action-edit"
@@ -601,6 +573,7 @@ export default function LeadsTable({
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            aria-hidden="true"
                           >
                             <path d="M11 4H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -626,6 +599,7 @@ export default function LeadsTable({
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            aria-hidden="true"
                           >
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -634,6 +608,44 @@ export default function LeadsTable({
                           </svg>
                         </button>
                       </div>
+                    </td>
+                    <td><strong>{lead.nameOfWorkEmplement}</strong></td>
+                    <td>{lead.nameOfClient}</td>
+                    <td>{lead.location}</td>
+                    <td>{lead.allottedTo || normalizeConcernPerson(lead.concernPerson) || '—'}</td>
+                    <td>{lead.contactDetails}</td>
+                    <td>
+                      <span className="badge badge-designation">
+                        {lead.designationOfConcernPerson}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="badge badge-source">
+                        {lead.sourceOfInquiry}
+                      </span>
+                    </td>
+                    <td>{lead.durationOfWork}</td>
+                    <td>
+                      <span className="badge badge-hurdle">
+                        {lead.hurdlesSpecificTask}
+                      </span>
+                    </td>
+                    <td className="amount-cell">{lead.approximateAmount}</td>
+                    <td>{lead.remarks || '—'}</td>
+                    <td>
+                      {Array.isArray(lead.attachedFiles) && lead.attachedFiles.length > 0 ? (
+                        <span className="badge badge-source" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <Paperclip size={13} aria-hidden="true" />
+                          <span>{lead.attachedFiles.length} {lead.attachedFiles.length === 1 ? 'file' : 'files'}</span>
+                        </span>
+                      ) : lead.attachedFiles ? (
+                        <span className="badge badge-source" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <Paperclip size={13} aria-hidden="true" />
+                          <span>{lead.attachedFiles}</span>
+                        </span>
+                      ) : (
+                        '—'
+                      )}
                     </td>
                   </tr>
                 ))
