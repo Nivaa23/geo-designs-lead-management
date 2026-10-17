@@ -538,6 +538,53 @@ html, body {
   background-color: var(--bg-sidebar);
 }
 
+.sidebar-collapse-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background-color: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary, #475569);
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease-in-out;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.sidebar-collapse-btn:hover {
+  background-color: var(--bg-app, #f8fafc);
+  color: var(--text-primary, #0f172a);
+  border-color: #cbd5e1;
+}
+
+.sidebar-collapse-btn:focus-visible {
+  outline: 2px solid var(--accent-primary, #4f46e5);
+  outline-offset: 2px;
+}
+
+.sidebar-collapse-icon {
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.sidebar-collapse-label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sidebar-logout-btn {
   display: flex;
   align-items: center;
@@ -615,7 +662,9 @@ html, body {
 }
 
 .sidebar.collapsed .sidebar-logout-btn,
-[data-state="collapsed"] .sidebar-logout-btn {
+[data-state="collapsed"] .sidebar-logout-btn,
+.sidebar.collapsed .sidebar-collapse-btn,
+[data-state="collapsed"] .sidebar-collapse-btn {
   width: 44px;
   height: 40px;
   padding: 0;
@@ -627,7 +676,9 @@ html, body {
 }
 
 .sidebar.collapsed .sidebar-logout-label,
-[data-state="collapsed"] .sidebar-logout-label {
+[data-state="collapsed"] .sidebar-logout-label,
+.sidebar.collapsed .sidebar-collapse-label,
+[data-state="collapsed"] .sidebar-collapse-label {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -642,7 +693,9 @@ html, body {
 }
 
 .sidebar.collapsed .sidebar-logout-icon,
-[data-state="collapsed"] .sidebar-logout-icon {
+[data-state="collapsed"] .sidebar-logout-icon,
+.sidebar.collapsed .sidebar-collapse-icon,
+[data-state="collapsed"] .sidebar-collapse-icon {
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -660,9 +713,11 @@ html, body {
   overflow: hidden !important;
 }
 
-/* Accessible Tooltip for Collapsed Logout Button */
+/* Accessible Tooltip for Collapsed Logout & Collapse Buttons */
 .sidebar.collapsed .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""])::after,
-[data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""])::after {
+[data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""])::after,
+.sidebar.collapsed .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""])::after,
+[data-state="collapsed"] .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""])::after {
   content: attr(data-tooltip);
   position: absolute;
   left: calc(100% + 12px);
@@ -684,7 +739,9 @@ html, body {
 }
 
 .sidebar.collapsed .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""])::before,
-[data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""])::before {
+[data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""])::before,
+.sidebar.collapsed .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""])::before,
+[data-state="collapsed"] .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""])::before {
   content: '';
   position: absolute;
   left: calc(100% + 6px);
@@ -707,7 +764,15 @@ html, body {
 [data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""]):hover::after,
 [data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""]):hover::before,
 [data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""]):focus-visible::after,
-[data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""]):focus-visible::before {
+[data-state="collapsed"] .sidebar-logout-btn[data-tooltip]:not([data-tooltip=""]):focus-visible::before,
+.sidebar.collapsed .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):hover::after,
+.sidebar.collapsed .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):hover::before,
+.sidebar.collapsed .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):focus-visible::after,
+.sidebar.collapsed .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):focus-visible::before,
+[data-state="collapsed"] .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):hover::after,
+[data-state="collapsed"] .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):hover::before,
+[data-state="collapsed"] .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):focus-visible::after,
+[data-state="collapsed"] .sidebar-collapse-btn[data-tooltip]:not([data-tooltip=""]):focus-visible::before {
   opacity: 1;
   visibility: visible;
 }
